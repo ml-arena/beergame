@@ -4,8 +4,6 @@ setup(
     name="beergame",
     version="0.1.0",
     description="Beer Game Environment for PettingZoo",
-    author="Your Name",
-    author_email="your.email@example.com",
     packages=find_packages(),
     install_requires=[
         "numpy>=1.21.0",
