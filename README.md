@@ -5,18 +5,15 @@ A PettingZoo-compatible implementation of the Beer Distribution Game, a simulati
 ## Installation
 
 ```bash
-pip install -e .
+pip install beergame
 ```
 
 ## Usage
 
 ```python
-import beergame
+from beergame import beergame_v0
 
-# Create the environment
-env = beergame.env(render_mode="human")
-
-# Reset the environment
+env = beergame_v0.beergame_v0(render_mode="rgb_array")
 env.reset()
 
 # Example interaction loop
@@ -36,7 +33,6 @@ env.close()
 
 ## Environment Parameters
 
-- `num_players`: Number of players in the supply chain (default: 4)
 - `holding_cost`: Cost per unit of inventory held per week
 - `backorder_cost`: Cost per unit of backlogged orders per week
 - `init_inv_level`: Initial inventory levels for each player
@@ -54,7 +50,7 @@ Each agent receives a dictionary observation with:
 
 ## Action Space
 
-Actions are continuous values representing order quantities (0 to 100 units).
+Actions are continuous values representing order quantities (0 to 50 units).
 
 ## Rewards
 
