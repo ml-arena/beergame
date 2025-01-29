@@ -20,6 +20,30 @@ class Agent:
         self.demand_history = deque(maxlen=8)  # Track last 8 weeks of demand
         self.last_orders = deque(maxlen=4)     # Track last 4 orders
         self.avg_demand = None
+        
+        # Define observation keys order to match the Box space
+        self.obs_keys = [
+            "inventory",
+            "backorders",
+            "orders",
+            "incoming_shipments",
+            "holding_cost",
+            "backorder_cost"
+        ]
+
+    def _array_to_dict_obs(self, obs_array):
+        """Convert flat array observation to dictionary format
+        
+        Args:
+            obs_array (np.ndarray): Flat array of shape (6,) containing observation values
+            
+        Returns:
+            dict: Dictionary with named observation values
+        """
+        return {
+            key: np.array([value], dtype=np.float32)
+            for key, value in zip(self.obs_keys, obs_array)
+        }
 
     def _estimate_lead_time(self):
         """Estimate lead time based on position in supply chain"""
@@ -83,12 +107,27 @@ class Agent:
         return float(order_quantity)
 
     def choose_action(self, observation, reward=0.0, terminated=False, truncated=False, info=None, action_mask=None):
-        """Choose action based on current observation"""
+        """Choose action based on current observation
+        
+        Args:
+            observation (np.ndarray): Flat array observation of shape (6,)
+            reward (float): Current reward
+            terminated (bool): Whether episode is terminated
+            truncated (bool): Whether episode is truncated
+            info (dict): Additional info
+            action_mask (list): Optional action mask
+            
+        Returns:
+            float: Order quantity
+        """
         if terminated or truncated:
             return 0.0
             
-        # Calculate order quantity
-        order_quantity = self._calculate_order_quantity(observation)
+        # Convert array observation to dictionary format
+        obs_dict = self._array_to_dict_obs(observation)
+        
+        # Calculate order quantity using dictionary observation
+        order_quantity = self._calculate_order_quantity(obs_dict)
         
         # Track order history
         self.last_orders.append(order_quantity)

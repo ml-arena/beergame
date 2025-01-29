@@ -140,7 +140,14 @@ class raw_env(AECEnv):
         agent = self.agent_selection
         agent_idx = self.possible_agents.index(agent)
         
-        self.orders[agent_idx] = float(action)
+
+        # Handle different action formats
+        try:
+            # Will work for any sequence type (list, numpy array, protobuf repeated container)
+            self.orders[agent_idx] = float(action[0])
+        except (TypeError, IndexError):
+            # If action is not a sequence or is empty, try to convert directly
+            self.orders[agent_idx] = float(action)
         
         if self._agent_selector.is_last():
             self._update_state()

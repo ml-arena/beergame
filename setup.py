@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="beergame",
-    version="0.7",
+    version="0.8",
     description="Beer Game Environment for PettingZoo",
     packages=find_packages(),
     package_data={
