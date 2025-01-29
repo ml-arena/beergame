@@ -51,21 +51,47 @@ class raw_env(AECEnv):
             for agent in self.possible_agents
         }
         
-        self._observation_spaces = {
-            agent: Dict({
-                "inventory": Box(low=0, high=float('inf'), shape=(1,)),  # Changed lower bound to 0
-                "backorders": Box(low=0, high=float('inf'), shape=(1,)),  # Added separate backorders
+        # Keep the dictionary structure for reference and clarity
+        self._observation_spaces_dict = {
+            agent: {
+                "inventory": Box(low=0, high=float('inf'), shape=(1,)),
+                "backorders": Box(low=0, high=float('inf'), shape=(1,)),
                 "orders": Box(low=0, high=float('inf'), shape=(1,)),
                 "incoming_shipments": Box(low=0, high=float('inf'), shape=(1,)),
                 "holding_cost": Box(low=0, high=float('inf'), shape=(1,)),
                 "backorder_cost": Box(low=0, high=float('inf'), shape=(1,))
-            })
+            }
             for agent in self.possible_agents
         }
-        self.customer = {
-                "orders": 0,
-                "incoming_shipments": 0,
+        
+        # Convert to Box space
+        # Each agent has 6 values (inventory, backorders, orders, incoming_shipments, holding_cost, backorder_cost)
+        self._observation_spaces = {
+            agent: Box(
+                low=0,
+                high=float('inf'),
+                shape=(6,),  # Combined shape for all values
+                dtype=np.float32
+            )
+            for agent in self.possible_agents
         }
+        
+        self.customer = {
+            "orders": 0,
+            "incoming_shipments": 0,
+        }
+    def _observation_dict_to_space(self, obs_dict):
+        """Convert dictionary observation to Box space format"""
+        # Define order of keys to ensure consistent conversion
+        keys = ["inventory", "backorders", "orders", "incoming_shipments", 
+                "holding_cost", "backorder_cost"]
+        
+        # Flatten all values into a single array
+        flat_obs = np.array([
+            obs_dict[key][0] for key in keys
+        ], dtype=np.float32)
+        
+        return flat_obs
     @functools.lru_cache(maxsize=None)
     def action_space(self, agent):
         return self._action_spaces[agent]
@@ -157,7 +183,8 @@ class raw_env(AECEnv):
             
         agent_idx = self.possible_agents.index(agent)
         
-        obs = {
+        # Create dictionary observation first
+        obs_dict = {
             "inventory": np.array([self.inventory_levels[agent_idx]], dtype=np.float32),
             "backorders": np.array([self.backorders[agent_idx]], dtype=np.float32),
             "orders": np.array([self.orders[agent_idx]], dtype=np.float32),
@@ -166,7 +193,8 @@ class raw_env(AECEnv):
             "backorder_cost": np.array([self.backorder_cost[agent_idx]], dtype=np.float32)
         }
         
-        return obs
+        # Convert to Box space format
+        return self._observation_dict_to_space(obs_dict)
 
     def _update_state(self):
         """Update the game state after all agents have acted."""
