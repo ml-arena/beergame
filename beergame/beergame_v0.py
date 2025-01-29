@@ -1,6 +1,6 @@
 """Beer Game v0 environment registration"""
 
-from beergame.env.beergame import env
+from .env.beergame import env
 
 def beergame_v0(**kwargs):
     """
